@@ -35,4 +35,7 @@
 
     <string name="activity_login_btn_text">Log into Dribbble</string>
     <string name="activity_login_icon">Dribbble icon</string>
+
+    <string name="share_shot">Let\'s share the shot!</string>
+    <string name="choose_bucket">choose buckets</string>
 </resources>

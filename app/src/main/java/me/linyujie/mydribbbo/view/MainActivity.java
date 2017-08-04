@@ -1,6 +1,8 @@
 package me.linyujie.mydribbbo.view;
 
+import android.content.Intent;
 import android.content.res.Configuration;
+import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.NavigationView;
@@ -11,10 +13,15 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.TextView;
+
+import com.facebook.drawee.view.SimpleDraweeView;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import me.linyujie.mydribbbo.R;
+import me.linyujie.mydribbbo.dribbble.Dribbble;
 import me.linyujie.mydribbbo.view.bucket_list.BucketListFragment;
 import me.linyujie.mydribbbo.view.shot_list.ShotListFragment;
 
@@ -83,6 +90,26 @@ public class MainActivity extends AppCompatActivity {
 
         drawerLayout.setDrawerListener(drawerToggle);
 
+       // set up for header
+
+        View headerView = navigationView.getHeaderView(0);
+
+        ((TextView) headerView.findViewById(R.id.nav_header_user_name)).setText(Dribbble.getCurrentUser().name);
+
+        ((SimpleDraweeView) headerView.findViewById(R.id.nav_header_user_picture))
+                .setImageURI(Uri.parse(Dribbble.getCurrentUser().avatar_url));
+
+        headerView.findViewById(R.id.nav_header_logout).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Dribbble.logout(MainActivity.this);
+
+                Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+                startActivity(intent);
+                finish();
+            }
+        });
+
         navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
 
             @Override
@@ -104,7 +131,7 @@ public class MainActivity extends AppCompatActivity {
                         setTitle(R.string.title_likes);
                         break;
                     case R.id.drawer_item_buckets:
-                        fragment = BucketListFragment.newInstance();
+                        fragment = BucketListFragment.newInstance(false, null);
                         setTitle((R.string.title_buckets));
                         break;
                 }
