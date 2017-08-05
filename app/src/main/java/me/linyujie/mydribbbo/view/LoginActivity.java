@@ -15,6 +15,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import me.linyujie.mydribbbo.R;
 import me.linyujie.mydribbbo.dribbble.Dribbble;
+import me.linyujie.mydribbbo.dribbble.DribbbleException;
 import me.linyujie.mydribbbo.dribbble.auth.Auth;
 import me.linyujie.mydribbbo.dribbble.auth.AuthActivity;
 
@@ -38,7 +39,7 @@ public class LoginActivity extends AppCompatActivity {
         if (!Dribbble.isLoggedIn()) {
             loginBtn.setOnClickListener(new View.OnClickListener() {
                 @Override
-                public void onClick(View view) {
+                public void onClick(View v) {
                     Auth.openAuthActivity(LoginActivity.this);
                 }
             });
@@ -49,28 +50,23 @@ public class LoginActivity extends AppCompatActivity {
         }
     }
 
-
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
         if (requestCode == Auth.REQ_CODE && resultCode == RESULT_OK) {
             final String authCode = data.getStringExtra(AuthActivity.KEY_CODE);
-
-            //start the second & third authorization step here within a new Thread, async ok.
-
             new Thread(new Runnable() {
                 @Override
                 public void run() {
                     try {
                         String token = Auth.fetchAccessToken(authCode);
-
                         Dribbble.login(LoginActivity.this, token);
 
                         Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                         startActivity(intent);
                         finish();
-                    } catch (IOException | JsonSyntaxException e) {
+                    } catch (IOException | DribbbleException e) {
                         e.printStackTrace();
                     }
                 }

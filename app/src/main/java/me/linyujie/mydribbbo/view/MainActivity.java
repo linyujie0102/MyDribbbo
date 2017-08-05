@@ -14,6 +14,7 @@ import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.facebook.drawee.view.SimpleDraweeView;
@@ -22,6 +23,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import me.linyujie.mydribbbo.R;
 import me.linyujie.mydribbbo.dribbble.Dribbble;
+import me.linyujie.mydribbbo.utils.ImageUtils;
 import me.linyujie.mydribbbo.view.bucket_list.BucketListFragment;
 import me.linyujie.mydribbbo.view.shot_list.ShotListFragment;
 
@@ -29,9 +31,7 @@ import me.linyujie.mydribbbo.view.shot_list.ShotListFragment;
 public class MainActivity extends AppCompatActivity {
 
     @BindView(R.id.toolbar) Toolbar toolbar;
-
     @BindView(R.id.drawer_layout) DrawerLayout drawerLayout;
-
     @BindView(R.id.drawer) NavigationView navigationView;
 
     private ActionBarDrawerToggle drawerToggle;
@@ -43,18 +43,25 @@ public class MainActivity extends AppCompatActivity {
         ButterKnife.bind(this);
 
         setSupportActionBar(toolbar);
-
-        System.out.println(getSupportActionBar().getHeight());
-
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setHomeButtonEnabled(true);
 
-        setupDrawer();
+        DrawerLayout drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        drawerToggle = new ActionBarDrawerToggle(
+                this,                  /* host Activity */
+                drawerLayout,          /* DrawerLayout object */
+                R.string.open_drawer,         /* "open drawer" description */
+                R.string.close_drawer         /* "close drawer" description */
+        );
+        drawerLayout.setDrawerListener(drawerToggle);
+        setupDrawer(drawerLayout);
 
         if (savedInstanceState == null) {
+            ShotListFragment shotListFragment = ShotListFragment.newInstance(
+                    ShotListFragment.LIST_TYPE_POPULAR);
             getSupportFragmentManager()
                     .beginTransaction()
-                    .add(R.id.fragment_container, ShotListFragment.newInstance())
+                    .add(R.id.fragment_container, shotListFragment)
                     .commit();
         }
     }
@@ -76,32 +83,19 @@ public class MainActivity extends AppCompatActivity {
         if (drawerToggle.onOptionsItemSelected(item)) {
             return true;
         }
-
         return super.onOptionsItemSelected(item);
     }
 
-    private void setupDrawer() {
-        drawerToggle = new ActionBarDrawerToggle(
-                this,
-                drawerLayout,
-                R.string.open_drawer,
-                R.string.close_drawer
-        );
+    private void setupDrawer(final DrawerLayout drawerLayout) {
+        // dynamically set header, the header is not specified in main_activity.xml layout
+        View headerView = navigationView.inflateHeaderView(R.layout.nav_header);
 
-        drawerLayout.setDrawerListener(drawerToggle);
-
-       // set up for header
-
-        View headerView = navigationView.getHeaderView(0);
-
-        ((TextView) headerView.findViewById(R.id.nav_header_user_name)).setText(Dribbble.getCurrentUser().name);
-
-        ((SimpleDraweeView) headerView.findViewById(R.id.nav_header_user_picture))
-                .setImageURI(Uri.parse(Dribbble.getCurrentUser().avatar_url));
+        ((TextView) headerView.findViewById(R.id.nav_header_user_name)).setText(
+                Dribbble.getCurrentUser().name);
 
         headerView.findViewById(R.id.nav_header_logout).setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view) {
+            public void onClick(View v) {
                 Dribbble.logout(MainActivity.this);
 
                 Intent intent = new Intent(MainActivity.this, LoginActivity.class);
@@ -110,40 +104,41 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
+        SimpleDraweeView userPicture = headerView.findViewById(R.id.nav_header_user_picture);
+        ImageUtils.loadUserPicture(Dribbble.getCurrentUser().avatar_url, userPicture);
 
+        navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
-            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-                if(item.isChecked()) {
+            public boolean onNavigationItemSelected(MenuItem item) {
+                if (item.isChecked()) {
                     drawerLayout.closeDrawers();
                     return true;
-
                 }
 
                 Fragment fragment = null;
                 switch (item.getItemId()) {
                     case R.id.drawer_item_home:
-                        fragment = ShotListFragment.newInstance();
+                        fragment = ShotListFragment.newInstance(ShotListFragment.LIST_TYPE_POPULAR);
                         setTitle(R.string.title_home);
                         break;
                     case R.id.drawer_item_likes:
-                        fragment = ShotListFragment.newInstance();
+                        fragment = ShotListFragment.newInstance(ShotListFragment.LIST_TYPE_LIKED);
                         setTitle(R.string.title_likes);
                         break;
                     case R.id.drawer_item_buckets:
-                        fragment = BucketListFragment.newInstance(false, null);
-                        setTitle((R.string.title_buckets));
+                        fragment = BucketListFragment.newInstance(null, false, null);
+                        setTitle(R.string.title_buckets);
                         break;
                 }
 
                 drawerLayout.closeDrawers();
 
-                if(fragment != null) {
+                if (fragment != null) {
                     getSupportFragmentManager()
                             .beginTransaction()
                             .replace(R.id.fragment_container, fragment)
                             .commit();
-                    return  true;
+                    return true;
                 }
 
                 return false;

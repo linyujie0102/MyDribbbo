@@ -8,9 +8,9 @@
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher_round"
         android:label="@string/app_name"
         android:name=".DribbboApplication"
-        android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
 
@@ -22,14 +22,15 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".view.shot_detail.ShotActivity"/>
+        <activity android:name=".view.MainActivity" />
 
-        <activity android:name=".view.MainActivity"/>
+        <activity android:name=".view.shot_detail.ShotActivity" />
+        <activity android:name=".view.bucket_list.BucketListActivity" />
+        <activity android:name=".view.bucket_list.BucketShotListActivity" />
 
         <activity
             android:name=".dribbble.auth.AuthActivity"
             android:windowSoftInputMode="adjustPan"/>
-        <activity android:name=".view.bucket_list.ChooseBucketActivity"/>
 
     </application>
 
